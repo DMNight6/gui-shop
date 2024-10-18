@@ -24,9 +24,15 @@ public class GUIShopOpenCommand {
                 .then(CommandManager.literal("open")
                         .then(CommandManager.argument("shopName", StringArgumentType.string())
                                 .suggests(new CommonMethods.ShopNameSuggestionProvider())
-                                .then(CommandManager.argument("playerName", EntityArgumentType.player())
+                                    .then(CommandManager.argument("playerName", EntityArgumentType.player())
+                                    .requires(Permissions.require("guishop.open.target",3))
+                                    .executes(GUIShopOpenCommand::run))
                                 .requires(Permissions.require("guishop.open",2))
-                                .executes(GUIShopOpenCommand::run)))));
+                                .executes(GUIShopOpenCommand::runWithoutTarget))));
+    }
+
+    public static int runWithoutTarget(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
+        return run(context, context.getSource().getPlayer().getEntityName());
     }
 
     public static int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
