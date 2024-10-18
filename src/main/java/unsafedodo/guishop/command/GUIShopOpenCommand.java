@@ -28,22 +28,23 @@ public class GUIShopOpenCommand {
                                     .requires(Permissions.require("guishop.open.target",3))
                                     .executes(GUIShopOpenCommand::run))
                                 .requires(Permissions.require("guishop.open",2))
-                                .executes(GUIShopOpenCommand::runWithoutTarget))));
-    }
-
-    public static int runWithoutTarget(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
-        return run(context, context.getSource().getPlayer().getEntityName());
+                                .executes(GUIShopOpenCommand::run))));
     }
 
     public static int run(CommandContext<ServerCommandSource> context) throws CommandSyntaxException {
         String shopName = StringArgumentType.getString(context, "shopName");
         Shop selectedShop = CommonMethods.getShopByName(shopName);
+        boolean hasPlayerContext = context.getNodes().stream().anyMatch(node -> node.getNode().getName().equals("playerName"));
 
         if(selectedShop != null){
             if(selectedShop.getItems().size() > 0){
                 if(selectedShop.getItems().size() <= PagedShopGUI.MAX_PAGE_ITEMS){
                     try{
-                        ShopGUI shopGUI = new ShopGUI(EntityArgumentType.getPlayer(context, "playerName"), selectedShop);
+                        if (hasPlayerContext) {
+                            ShopGUI shopGUI = new ShopGUI(EntityArgumentType.getPlayer(context, "playerName"), selectedShop);
+                        } else {
+                            ShopGUI shopGUI = new ShopGUI(context.getSource().getPlayer(), selectedShop);
+                        };             
                         shopGUI.open();
                     } catch (ExecutionException  | InterruptedException ignored){
 
@@ -51,7 +52,12 @@ public class GUIShopOpenCommand {
 
                 } else {
                     try{
-                        PagedShopGUI pagedShopGUI = new PagedShopGUI(EntityArgumentType.getPlayer(context, "playerName"), selectedShop);
+                        if (hasPlayerContext) {
+                            PagedShopGUI pagedShopGUI = new PagedShopGUI(EntityArgumentType.getPlayer(context, "playerName"), selectedShop);                            
+                        } else {
+                            PagedShopGUI pagedShopGUI = new PagedShopGUI(context.getSource().getPlayer(), selectedShop);
+                        }
+
                         pagedShopGUI.open();
                     } catch (ExecutionException  | InterruptedException ignored){
 
